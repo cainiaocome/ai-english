@@ -30,7 +30,7 @@ generate_test_audio() {
 
 # Function to install whisper.cpp if not present
 install_whisper() {
-    if [ -d "$WHISPER_DIR" ]; then
+    if [ -d "$WHISPER_DIR" ] && [ -f "${WHISPER_DIR}/build/bin/whisper-cli" ]; then
         echo "whisper.cpp already installed"
         return 0
     fi
@@ -38,23 +38,23 @@ install_whisper() {
     echo "Installing whisper.cpp..."
     mkdir -p "$(dirname "$WHISPER_DIR")"
     
-    git clone --depth 1 https://github.com/ggerganov/whisper.cpp.git "$WHISPER_DIR"
+    if [ ! -d "$WHISPER_DIR" ]; then
+        git clone --depth 1 https://github.com/ggerganov/whisper.cpp.git "$WHISPER_DIR"
+    fi
     
     cd "$WHISPER_DIR"
     
-    # Build whisper.cpp
-    make clean
+    # Build whisper.cpp using cmake (recommended method)
+    echo "Building with cmake..."
+    cmake -B build -DWHISPER_METAL=ON
+    cmake --build build --config Release
     
-    # Use Metal on macOS for faster inference
-    if [[ "$(uname)" == "Darwin" ]]; then
-        echo "Building with Metal support..."
-        make -j$(sysctl -n hw.ncpu) WHISPER_METAL=1
+    if [ -f "build/bin/whisper-cli" ]; then
+        echo "✓ whisper.cpp built successfully"
     else
-        echo "Building without Metal..."
-        make -j$(nproc)
+        echo "✗ whisper.cpp build failed"
+        return 1
     fi
-    
-    echo "✓ whisper.cpp built successfully"
     
     cd "$PROJECT_ROOT"
 }
@@ -98,7 +98,7 @@ test_transcription() {
     fi
     
     # Run whisper transcription
-    WHISPER_BIN="${WHISPER_DIR}/main"
+    WHISPER_BIN="${WHISPER_DIR}/build/bin/whisper-cli"
     
     if [ ! -f "$WHISPER_BIN" ]; then
         echo "✗ Whisper binary not found: $WHISPER_BIN"
