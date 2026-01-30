@@ -6,7 +6,11 @@ set -e
 
 APP_PATH="${1:-src-tauri/target/release/bundle/macos/ai-english.app}"
 
+# Convert to absolute path (required for 'open' command)
+APP_PATH="$(cd "$(dirname "$APP_PATH")" && pwd)/$(basename "$APP_PATH")"
+
 echo "=== AI English E2E Smoke Test ==="
+echo "Testing: $APP_PATH"
 
 # Check if app exists
 if [ ! -d "$APP_PATH" ]; then
@@ -69,7 +73,7 @@ sleep 2
 # Verify it quit
 if pgrep -f "ai-english" > /dev/null; then
     echo "⚠ App still running, force killing..."
-    pkill -f "ai-english" || true
+    kill $(pgrep -f "ai-english") 2>/dev/null || true
 fi
 
 echo ""
