@@ -2,6 +2,31 @@
 
 This guide provides detailed instructions for setting up the AI English Learning Assistant.
 
+## Quick Start: Using Pre-built Releases
+
+### Download and Install
+
+1. Download the latest release from [GitHub Actions](https://github.com/cainiaocome/ai-english/actions)
+2. Extract the zip file
+3. **Important**: Before first launch, remove the quarantine attribute:
+
+```bash
+# For the .app bundle
+xattr -cr /path/to/ai-english.app
+
+# Or for the DMG
+xattr -cr /path/to/ai-english.dmg
+```
+
+4. Move to Applications folder (optional but recommended)
+5. Double-click to launch
+
+### Why the quarantine removal?
+
+macOS marks downloaded apps as "quarantined" for security. Since CI builds aren't notarized with an Apple Developer certificate, you need to manually approve them.
+
+---
+
 ## System Requirements
 
 - **Operating System**: macOS 13.0 (Ventura) or later
@@ -9,7 +34,7 @@ This guide provides detailed instructions for setting up the AI English Learning
 - **Memory**: 8GB RAM minimum (16GB recommended for whisper.cpp)
 - **Storage**: 2GB free space
 
-## Prerequisites
+## Building from Source
 
 ### 1. Install Homebrew (if not installed)
 
