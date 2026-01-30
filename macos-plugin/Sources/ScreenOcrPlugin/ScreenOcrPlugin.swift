@@ -48,30 +48,52 @@ public class ScreenOcrPlugin {
         guard isCapturing else { return }
         
         Task {
-            do {
-                // Get available content
-                let content = try await SCShareableContent.current
-                guard let display = content.displays.first else { return }
-                
-                // Configure capture
-                let filter = SCContentFilter(display: display, excludingWindows: [])
-                let config = SCStreamConfiguration()
-                config.width = Int(display.width)
-                config.height = Int(display.height)
-                config.pixelFormat = kCVPixelFormatType_32BGRA
-                
-                // Capture single frame
-                let image = try await SCScreenshotManager.captureImage(
-                    contentFilter: filter,
-                    configuration: config
-                )
-                
-                // Perform OCR
-                await performOCR(on: image)
-                
-            } catch {
-                print("Screen capture error: \(error)")
+            await performCapture()
+        }
+    }
+    
+    @available(macOS 14.0, *)
+    private func captureWithScreenshotManager() async throws -> CGImage {
+        let content = try await SCShareableContent.current
+        guard let display = content.displays.first else {
+            throw NSError(domain: "ScreenOcrPlugin", code: 1, userInfo: [NSLocalizedDescriptionKey: "No display found"])
+        }
+        
+        let filter = SCContentFilter(display: display, excludingWindows: [])
+        let config = SCStreamConfiguration()
+        config.width = Int(display.width)
+        config.height = Int(display.height)
+        config.pixelFormat = kCVPixelFormatType_32BGRA
+        
+        return try await SCScreenshotManager.captureImage(
+            contentFilter: filter,
+            configuration: config
+        )
+    }
+    
+    private func performCapture() async {
+        do {
+            let image: CGImage
+            if #available(macOS 14.0, *) {
+                image = try await captureWithScreenshotManager()
+            } else {
+                // Fallback for macOS 13.x - use CGWindowListCreateImage
+                guard let cgImage = CGWindowListCreateImage(
+                    CGRect.infinite,
+                    .optionOnScreenOnly,
+                    kCGNullWindowID,
+                    .bestResolution
+                ) else {
+                    print("Screen capture failed: CGWindowListCreateImage returned nil")
+                    return
+                }
+                image = cgImage
             }
+            
+            await performOCR(on: image)
+            
+        } catch {
+            print("Screen capture error: \(error)")
         }
     }
     

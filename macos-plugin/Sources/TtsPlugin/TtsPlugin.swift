@@ -2,7 +2,9 @@ import Foundation
 import AVFoundation
 
 /// Text-to-Speech Plugin using AVSpeechSynthesizer
-public class TtsPlugin: NSObject {
+/// Note: @unchecked Sendable is used because AVSpeechSynthesizer is not Sendable
+/// but we ensure thread-safe access through the plugin's public API
+public final class TtsPlugin: NSObject, @unchecked Sendable {
     
     private let synthesizer = AVSpeechSynthesizer()
     private var isSpeaking = false
