@@ -4,6 +4,9 @@ src-tauri/target/
 src-tauri/WixTools/
 src-tauri/gen/
 
+# Dependencies (downloaded at build time)
+deps/
+
 # Node & npm
 node_modules/
 npm-debug.log*

@@ -93,6 +93,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Cache whisper.cpp
+        uses: actions/cache@v4
+        with:
+          path: deps/whisper.cpp
+          key: ${{ runner.os }}-whisper-v1
+          restore-keys: |
+            ${{ runner.os }}-whisper-
+
       - name: Install dependencies
         run: npm ci
 
@@ -117,6 +125,37 @@ jobs:
           APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" -type d | head -1)
           chmod +x tests/smoke-test.sh
           ./tests/smoke-test.sh "$APP_PATH"
+
+      - name: Run OCR integration test
+        run: swift tests/integration/ocr_test.swift
+
+      - name: Run screen capture integration test
+        run: swift tests/integration/screen_capture_test.swift
+
+      - name: Build Swift plugins
+        run: |
+          cd macos-plugin
+          swift build
+
+      - name: Run TTS integration test
+        run: |
+          echo "Testing macOS TTS (say command)..."
+          TEMP_TTS="/tmp/tts_test.aiff"
+          say -o "$TEMP_TTS" "Hello world, this is a text to speech test"
+          if [ -f "$TEMP_TTS" ] && [ -s "$TEMP_TTS" ]; then
+            echo "✓ TTS generated audio successfully"
+            ls -la "$TEMP_TTS"
+            rm -f "$TEMP_TTS"
+          else
+            echo "✗ TTS test failed"
+            exit 1
+          fi
+
+      - name: Run audio transcription test
+        run: |
+          echo "Testing whisper.cpp audio transcription..."
+          chmod +x tests/integration/audio_test.sh
+          RUN_AUDIO_TEST=true ./tests/integration/audio_test.sh
 
       - name: Upload macOS App (zipped)
         uses: actions/upload-artifact@v4
