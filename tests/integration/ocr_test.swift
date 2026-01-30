@@ -29,17 +29,20 @@ func createTestImage(withText text: String, width: Int = 400, height: Int = 100)
     context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
     context.fill(CGRect(x: 0, y: 0, width: width, height: height))
     
-    // Black text
-    context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-    
-    // Draw text using Core Text
+    // Black text using Core Text (no AppKit dependency)
     let font = CTFontCreateWithName("Helvetica" as CFString, 24, nil)
-    let attributes: [NSAttributedString.Key: Any] = [
-        .font: font,
-        .foregroundColor: CGColor(red: 0, green: 0, blue: 0, alpha: 1)
+    let attributes: [CFString: Any] = [
+        kCTFontAttributeName: font,
+        kCTForegroundColorFromContextAttributeName: true
     ]
     
-    let attributedString = NSAttributedString(string: text, attributes: attributes)
+    context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+    
+    let attributedString = CFAttributedStringCreate(
+        nil,
+        text as CFString,
+        attributes as CFDictionary
+    )!
     let line = CTLineCreateWithAttributedString(attributedString)
     
     context.textPosition = CGPoint(x: 20, y: height / 3)
