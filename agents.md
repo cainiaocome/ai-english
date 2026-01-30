@@ -2,7 +2,18 @@
 
 Goal: build a macOS-first proof-of-concept (PoC) desktop app for learning English, using **Tauri + Rust core engine + macOS Swift plugins**, designed so the core can later be reused for Windows.
 
-Environment: I have a `GH_TOKEN` environment variable set with permission to push code and Github actions. Also command `gh` is installed. You should be able to set up Github workflows for testing and push the code to Github and test your implementation there.
+Environment: Command `gh`(Github client) is installed. Also a `GH_TOKEN` environment variable is set with permission to query Github action run. You should be able to set up Github workflows for testing and push the code to Github to compile and test your implementation in Github workflow. Example commands:
+
+```bash
+gh run list
+gh run rerun
+gh run view
+gh run watch
+```
+
+You can add `--help` flag to any command to see more details.
+
+```bash
 
 ---
 
@@ -122,37 +133,39 @@ The implementation is considered successful if **all items below work on a real 
 ## 4. Repository Structure (Recommended)
 
 ```
+
 repo/
-  src-tauri/
-    src/
-      main.rs
-      engine/
-        mod.rs
-        cache.rs
-        retrieve.rs
-        llm.rs
-        asr/
-          mod.rs
-          whisper.rs
-      commands.rs
-    tauri.conf.json
-    Cargo.toml
+src-tauri/
+src/
+main.rs
+engine/
+mod.rs
+cache.rs
+retrieve.rs
+llm.rs
+asr/
+mod.rs
+whisper.rs
+commands.rs
+tauri.conf.json
+Cargo.toml
 
-  src/
-    ui/
-      App.tsx
-      components/
+src/
+ui/
+App.tsx
+components/
 
-  macos-plugin/
-    Sources/
-      ScreenOcrPlugin/
-        ScreenOcrPlugin.swift
-      TtsPlugin/
-        TtsPlugin.swift
-      AudioCapturePlugin/   (optional)
+macos-plugin/
+Sources/
+ScreenOcrPlugin/
+ScreenOcrPlugin.swift
+TtsPlugin/
+TtsPlugin.swift
+AudioCapturePlugin/ (optional)
 
-  agents.md
-```
+agents.md
+
+````
 
 ---
 
@@ -167,7 +180,7 @@ struct TextChunk {
     text: String,
     confidence: Option<f32>,
 }
-```
+````
 
 ### 5.2 Rolling buffers
 
