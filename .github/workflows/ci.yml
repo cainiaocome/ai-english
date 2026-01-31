@@ -157,6 +157,13 @@ jobs:
           chmod +x tests/integration/audio_test.sh
           RUN_AUDIO_TEST=true ./tests/integration/audio_test.sh
 
+      - name: Run E2E test
+        run: |
+          echo "Running end-to-end test..."
+          APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" -type d | head -1)
+          chmod +x tests/e2e/app_test.sh
+          ./tests/e2e/app_test.sh "$APP_PATH"
+
       - name: Upload macOS App (zipped)
         uses: actions/upload-artifact@v4
         with:

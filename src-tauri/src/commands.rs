@@ -3,6 +3,8 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
 
+use crate::tts::{Tts, TtsConfig};
+
 use ai_english_engine::{
     AudioTextBuffer, Context, ContextRetriever, ExplainResult, LlmClient, ScreenTextBuffer,
 };
@@ -12,6 +14,7 @@ pub struct AppState {
     pub screen_buffer: ScreenTextBuffer,
     pub audio_buffer: AudioTextBuffer,
     pub llm_client: LlmClient,
+    pub tts: Tts,
     pub paused: RwLock<bool>,
 }
 
@@ -21,6 +24,7 @@ impl AppState {
             screen_buffer: ScreenTextBuffer::new(),
             audio_buffer: AudioTextBuffer::new(),
             llm_client: LlmClient::from_env(),
+            tts: Tts::new(TtsConfig::default()),
             paused: RwLock::new(false),
         }
     }
@@ -73,24 +77,25 @@ pub fn is_paused(state: State<'_, Arc<AppState>>) -> bool {
     *state.paused.read()
 }
 
-/// Speak text using TTS (macOS only - calls Swift plugin)
-/// For non-macOS platforms, this is a no-op
+/// Speak text using TTS (macOS only)
 #[tauri::command]
-pub fn tts_speak(text: String) -> Result<(), String> {
-    // On macOS, this would call the Swift TTS plugin
-    // For the PoC running on other platforms, we just log
+pub fn tts_speak(text: String, state: State<'_, Arc<AppState>>) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        // Would call Swift plugin here
-        println!("TTS: {}", text);
+        state.tts.speak(&text)
     }
 
     #[cfg(not(target_os = "macos"))]
     {
         println!("TTS (mock): {}", text);
+        Ok(())
     }
+}
 
-    Ok(())
+/// Stop TTS playback
+#[tauri::command]
+pub fn tts_stop(state: State<'_, Arc<AppState>>) {
+    state.tts.stop();
 }
 
 /// Handle OCR chunk from Swift plugin

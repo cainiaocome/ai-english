@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
@@ -28,7 +28,16 @@ function App() {
   const [context, setContext] = useState<Context | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
+  const [showDebug, setShowDebug] = useState(true); // Show by default for debugging
+
+  // Auto-refresh context every 2 seconds when debug panel is visible
+  useEffect(() => {
+    if (showDebug) {
+      loadContext();
+      const interval = setInterval(loadContext, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [showDebug]);
 
   async function handleAskExplain(e: React.FormEvent) {
     e.preventDefault();
