@@ -6,7 +6,6 @@ pub mod tts;
 pub use ai_english_engine as engine;
 
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Manager;
 use tokio::sync::mpsc;
 
@@ -35,8 +34,6 @@ pub fn run() {
             handle_ocr_chunk,
             handle_asr_chunk,
             add_mock_data,
-            start_screen_capture,
-            stop_screen_capture,
         ])
         .setup(move |app| {
             // Register global shortcut (Option+Space on macOS)
@@ -83,19 +80,4 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-/// Start screen capture
-#[tauri::command]
-pub fn start_screen_capture() -> Result<(), String> {
-    // Screen capture is started automatically on app launch
-    // This command is for manual control if needed
-    Ok(())
-}
-
-/// Stop screen capture
-#[tauri::command]
-pub fn stop_screen_capture() -> Result<(), String> {
-    // Would stop the capture thread
-    Ok(())
 }
